@@ -9,6 +9,18 @@ class UserService {
     this._pool = new Pool()
   }
 
+  async verifyNewUsername (username) {
+    const query = {
+      text: 'SELECT username FROM users WHERE username = $1',
+      values: [username]
+    }
+    const result = await this._pool.query(query)
+
+    if (result.rows.length > 0) {
+      throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.')
+    }
+  }
+
   async addUser ({ username, password, fullname }) {
     await this.verifyNewUsername(username)
     const id = `user-${nanoid(16)}`
@@ -17,7 +29,7 @@ class UserService {
       text: 'INSERT INTO users VALUES($1, $2, $3, $4) RETURNING id',
       values: [id, username, hashedPassword, fullname]
     }
-    const result = this._pool.query(query)
+    const result = await this._pool.query(query)
 
     if (!result.rows.length) {
       throw new InvariantError('User gagal ditambahkan')
@@ -38,18 +50,6 @@ class UserService {
     }
 
     return result.rows[0]
-  }
-
-  async verifyNewUsername (username) {
-    const query = {
-      text: 'SELECT * FROM users WHERE username = $1',
-      value: [username]
-    }
-    const result = await this._pool.query(query)
-
-    if (result.rows.length > 0) {
-      throw new InvariantError('Gagal menambahkan user, Username sudah digunakan')
-    }
   }
 }
 
