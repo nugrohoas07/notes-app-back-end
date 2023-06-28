@@ -67,7 +67,6 @@ class NotesService {
   }
 
   async deleteNoteById (id) {
-    console.log('MASUK DELETE')
     const query = {
       text: 'DELETE FROM notes WHERE id = $1 RETURNING id',
       values: [id]
