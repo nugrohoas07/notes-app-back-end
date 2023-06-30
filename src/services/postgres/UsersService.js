@@ -1,9 +1,9 @@
 const { Pool } = require('pg')
+const { nanoid } = require('nanoid')
+const bcrypt = require('bcrypt')
 const InvariantError = require('../../exceptions/InvariantError')
 const NotFoundError = require('../../exceptions/NotFoundError')
 const AuthenticationError = require('../../exceptions/AuthenticationError')
-const { nanoid } = require('nanoid')
-const bcrypt = require('bcrypt')
 
 class UserService {
   constructor () {
@@ -73,6 +73,15 @@ class UserService {
       throw new AuthenticationError('Kredensial yang Anda berikan salah')
     }
     return id
+  }
+
+  async getUsersByUsername (username) {
+    const query = {
+      text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
+      values: [`%${username}%`]
+    }
+    const result = await this._pool.query(query)
+    return result.rows
   }
 }
 
